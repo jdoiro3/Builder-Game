@@ -113,8 +113,13 @@ class Rect {
         )
     }
 
-    draw(ctx) {
-        ctx.strokeRect(this.topLeft.x, this.topLeft.y, this.w, this.h);
+    draw(ctx, color, fill=false) {
+        ctx.fillStyle = color;
+        if (fill) {
+            ctx.fillRect(this.topLeft.x, this.topLeft.y, this.w, this.h);
+        } else {
+            ctx.strokeRect(this.topLeft.x, this.topLeft.y, this.w, this.h);
+        }
     }
 
 }
@@ -127,7 +132,9 @@ class Builder extends Circle {
         } else {
             super(space.center.x, space.center.y, 20);
         }
+        this.initial_position = initial_position;
         this.space = space;
+        this.initialized = false;
         this.owner = owner;
         if (owner === 'x') {
             this.color = 'blue';
@@ -137,21 +144,23 @@ class Builder extends Circle {
     }
 
     assign_space(space) {
-        console.log(space);
-        if (this.space === null || !space.has_builder) {
-            console.log("1");
-            space.remove_builder();
+        if (this.space === null) {
+            this.space = space;
+            this.initialized = true;
+            this.change_center(space.center.x, space.center.y);
+        } else {
+            this.space.remove_builder();
             this.space = space;
             this.change_center(space.center.x, space.center.y);
-        } else if (!space.has_builder) {
-            console.log("2");
-            if (space.level - this.space.level > 1) {
-                console.log("3");
-                space.remove_builder();
-                this.space = space;
-                this.change_center(space.center.x, space.center.y);
-            }
         }
+    }
+
+    go_back_to_space() {
+        this.change_center(this.space.center.x, this.space.center.y);
+    }
+
+    go_back_to_initial_spot() {
+        this.change_center(this.initial_position.x, this.initial_position.y);
     }
 
     clicked(mouse_location) {
@@ -178,10 +187,12 @@ class Builder extends Circle {
 class Space extends Rect {
     constructor(row, column, center, size) {
         super(center.x, center.y, size, size);
+        this.color = 'black';
         this.row = row;
         this.column = column;
         this.level = 0;
         this.has_builder = false;
+        this.highlighted = false;
     }
 
     is_space_adjacent(space) {
@@ -195,9 +206,25 @@ class Space extends Rect {
         return true;
     }
 
+    highlight() {
+        this.color = 'yellow';
+        ctx.save();
+        this.highlighted = true;
+    }
+
+    unhighlight() {
+        this.color = 'black';
+        this.highlighted = false;
+    }
+
     add_builder(builder) {
         if (this.has_builder) {
             console.log("has builder");
+            if (builder.space === null) {
+                builder.go_back_to_initial_spot();
+            } else {
+                builder.go_back_to_space();
+            }
         } else {
             builder.assign_space(this);
             this.has_builder = true;
@@ -213,6 +240,14 @@ class Space extends Rect {
             console.log("max level or has builder")
         } else {
             this.level += 1;
+        }
+    }
+
+    draw(ctx) {
+        if (this.highlighted) {
+            super.draw(ctx, this.color, true);
+        } else {
+            super.draw(ctx);
         }
     }
 
@@ -233,6 +268,8 @@ class Board {
             }
         }
         this.builders = builders;
+        this.x_initialized = false;
+        this.y_initialized = false;
     }
 
     get_space(row, column) {
@@ -255,11 +292,6 @@ class Board {
             }
         }
         return null;
-    }
-
-    place_builder(row, col, builder) {
-        let space = this.get_space(row, col);
-        space.add_builder(builder);
     }
 
     get_builder_spaces(player) {
@@ -290,27 +322,33 @@ class Board {
         return false;
     }
 
-    move_builder(from_row, from_col, to_row, to_col, player) {
-        let from_space = this.get_space(from_row, from_col);
-        let to_space = this.get_space(to_row, to_col);
-        let successful_remove = from_space.remove_builder(player);
-        if (!successful_remove) {
-            return false;
-        }
-        let successful_add = to_space.add_builder(player);
-        if (!successful_add) {
-            return false;
-        }
-        return true;
-    }
-
-    get_builder_selected(mouse_location) {
+    get_builder_selected(mouse_location, turn) {
         for (let b of this.builders) {
-            if (b.clicked(mouse_location)) {
+            console.log(b.clicked(mouse_location));
+            if (b.clicked(mouse_location) && turn === b.owner) {
                 return b;
             }
         }
         return null;
+    }
+
+    get_highlighted_space() {
+        for (let s in this.spaces) {
+            let space = this.spaces[s];
+            if (space.highlighted) {
+                return space;
+            }
+        }
+        return null;
+    }
+
+    get_selected_space(mouse_location) {
+        for (let s in this.spaces) {
+            let space = this.spaces[s];
+            if (space.contains(mouse_location)) {
+                return space;
+            }
+        } 
     }
 
     draw(ctx) {
