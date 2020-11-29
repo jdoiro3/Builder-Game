@@ -324,7 +324,6 @@ class Board {
 
     get_builder_selected(mouse_location, turn) {
         for (let b of this.builders) {
-            console.log(b.clicked(mouse_location));
             if (b.clicked(mouse_location) && turn === b.owner) {
                 return b;
             }
