@@ -1,20 +1,28 @@
+// main script file. utils.js defines objects used
+// Author: Joseph Doiron
+
+
+
+// get the canvas element and context object that handles the drawing
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
-
+// define each player's (x and o) builders 
+// each player gets two builders
 let b_x_one = new Builder('x', new Point(20, 60));
 let b_x_two = new Builder('x', new Point(20, 110));
 let b_y_one = new Builder('o', new Point(20, 160));
 let b_y_two = new Builder('o', new Point(20, 210));
+// put them in an array to access later
 let builders = [b_x_one, b_x_two, b_y_one, b_y_two];
+// defiene the game board
 let board = new Board(5, 5, 100, 100, 100, builders);
+// define players. this is used to change the turn
 let players = ['x','o'];
+// global variables used for handling different events in the game
 let moved_builder = false;
 let mouse_down = false;
 let builder_selected = false;
 let moving_builder = null;
-let game_state = 'x initialize builders';
-
-
 let turn = 'x';
 let all_initialized = false;
 let player_moved = false;
@@ -24,6 +32,7 @@ let moving = false;
 let building = false;
 let first_move = true;
 
+//************** helpers *******************************
 function get_other_player(current_player) {
 	return players.filter(p => p !== current_player).toString();
 }
@@ -34,7 +43,9 @@ function player_initialized_builders(player) {
 	}
 	return false;
 }
+//************** stages of game functions ******************
 
+// handles animations and control when player's are firs tplacing builders
 function initialize() {
 	let other_player = get_other_player(turn);
 	if (player_initialized_builders(turn) && !player_initialized_builders(other_player)) {
@@ -56,6 +67,7 @@ function initialize() {
     }
 }
 
+// handles part of game when player moves a builder
 function move() {
 
 	if (first_move) {
@@ -85,6 +97,7 @@ function move() {
     }
 }
 
+// handles part of game when player builds up a space
 function build() {
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -99,6 +112,7 @@ function build() {
 }
 
 
+// main function handles all stages of game
 function main() {
 	if (initializing) {
 		initialize();
@@ -111,9 +125,11 @@ function main() {
 	requestAnimationFrame(main);
 }
 
+// call main
 main();
 
 
+//**************** add and define event listeners *************************
 canvas.addEventListener("mousedown", function(event) {
     mouse_down = true;
     let rect = canvas.getBoundingClientRect();
