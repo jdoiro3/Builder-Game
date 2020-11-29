@@ -170,16 +170,21 @@ canvas.addEventListener("mouseup", function(event) {
 
         } else if (building) {
 
-            highlighted_space = board.get_highlighted_space();
-            space = board.get_selected_space(mouse_location);
+            let highlighted_space = board.get_highlighted_space();
+            let space = board.get_selected_space(mouse_location);
             if (highlighted_space !== null) {
                 highlighted_space.unhighlight();
             }
             if (highlighted_space === space) {
-                space.add_level(4);
-                building = false;
-                moving = true;
-                turn = get_other_player(turn);
+            	let player_builders = builders.filter(b => b.owner === turn);
+            	let builder_adjacent = player_builders.some(b => highlighted_space.is_space_adjacent(b.space));
+            	console.log(builder_adjacent);
+            	if (highlighted_space.level < 4 && !highlighted_space.has_builder && builder_adjacent) {
+            		highlighted_space.add_level();
+            		building = false;
+                	moving = true;
+                	turn = get_other_player(turn);
+            	}
             } else {
                 space.highlight();
             }

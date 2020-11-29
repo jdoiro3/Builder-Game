@@ -236,12 +236,8 @@ class Space extends Rect {
         this.has_builder = false;
     }
 
-    add_level(max_level) {
-        if (this.has_builder || this.level === max_level) {
-            console.log("max level or has builder")
-        } else {
-            this.level += 1;
-        }
+    add_level() {
+        this.level += 1;
     }
 
     draw(ctx) {
