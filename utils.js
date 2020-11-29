@@ -51,14 +51,6 @@ class Circle extends Point {
         this.center.chngP(x, y);
     }
 
-    random() {
-        let r = this.r * Math.sqrt(Math.random());
-        let rad = Math.random() * 2 * Math.PI;
-        let x = r * Math.cos(rad) + this.center.x;
-        let y = r * Math.sin(rad) + this.center.y;
-        return new Point(x,y);
-    }
-
 }
 
 
