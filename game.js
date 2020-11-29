@@ -144,13 +144,14 @@ canvas.addEventListener("mouseup", function(event) {
         let mouse_location = new Point(mouse_x, mouse_y);
 
         if (builder_selected) {
+
             builder_selected = false;
             let space = board.get_builder_current_space(moving_builder);
 
             if (space !== null && moving_builder.space !== null) {
-                if (space.is_space_adjacent(moving_builder.space)) {
+                if (space.is_space_adjacent(moving_builder.space) && (space.level - moving_builder.space.level) <= 1) {
                     space.add_builder(moving_builder);
-                    if (!initializing) {
+                    if (!initializing && !moving_builder.sent_back) {
                         moved_builder = true;
                     }
                 } else {
@@ -158,7 +159,7 @@ canvas.addEventListener("mouseup", function(event) {
                 }
             } else if (space !== null && moving_builder.space === null) {
                 space.add_builder(moving_builder);
-                if (!initializing) {
+                if (!initializing && !moving_builder.sent_back) {
                     moved_builder = true;
                 }
             } else {
@@ -166,14 +167,16 @@ canvas.addEventListener("mouseup", function(event) {
             }
     
             moving_builder = null;
+
         } else if (building) {
+
             highlighted_space = board.get_highlighted_space();
             space = board.get_selected_space(mouse_location);
             if (highlighted_space !== null) {
                 highlighted_space.unhighlight();
             }
             if (highlighted_space === space) {
-                space.add_level();
+                space.add_level(4);
                 building = false;
                 moving = true;
                 turn = get_other_player(turn);

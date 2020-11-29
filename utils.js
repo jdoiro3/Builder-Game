@@ -134,6 +134,7 @@ class Builder extends Circle {
         }
         this.initial_position = initial_position;
         this.space = space;
+        this.sent_back = false;
         this.initialized = false;
         this.owner = owner;
         if (owner === 'x') {
